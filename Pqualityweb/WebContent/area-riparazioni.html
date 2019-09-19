@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>AREA RIPARAZIONE</title>
+	    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+	<link rel="stylesheet" href="assets/form-validation.css">
+	<link rel="stylesheet" href="assets/form-register.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+</head>
+<body ng-app="myApp">
+<header>
+	<nav class="navbar navbar-expand-lg navbar-dark" style="background:orange;">
+      <div class="collapse navbar-collapse" id="navbarText">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item ">
+        <a class="nav-link" href="index.html">Home </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="form-validation.html">Controllo qualità <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="area-riparazioni.html">Area riparazioni</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+</header>
+	<div ng-controller="CTRL" class="py-5">
+    <div id="first">
+        <!-- You only need this form and the form-validation.css -->
+        <form class="form-validation" >
+            <div class="form-title-row">
+                <h1>Inserimento prodotto riparato</h1>
+            </div>
+            <div class="form-row form-input-name-row">
+                <label>
+                    <span>RFID CODE:</span>
+                    <input ng-change="productExists($rootScope)" type="text" name = "target" ng-model="$rootScope.product.target">	
+                </label>
+<!--
+                    Add these three elements to every form row. They will be shown by the
+                    .form-valid-data and .form-invalid-data classes (see the JS for an example).
+                -->
+                <span class="form-invalid-data-sign" id="exist"><i class="fa fa-close"></i></span>
+             </div>
+            <div class="form-row">
+                <button id="subutton" ng-click="updateRepair($rootScope);">CONFERMA</button>
+            </div>
+        </form>
+    </div>	
+	</div>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script>
+		var app =angular.module("myApp",[]);
+		app.config(function ($httpProvider) {
+  $httpProvider.defaults.headers.common = {};
+  $httpProvider.defaults.headers.post = {};
+  $httpProvider.defaults.headers.put = {};
+  $httpProvider.defaults.headers.patch = {};
+});
+		app.controller("CTRL", function($rootScope, $http) {
+			var scope = $rootScope;
+			scope.product = {target : "", name : "", quality:0};
+			//Metodo di controllo che dice se il prodotto esiste già:
+			//In caso esista già il prodotto bisogna disabiliater il submit!
+			scope.productExists = function(scope){
+				$http.get('http://localhost:8090/products/tag/'+scope.product.target )
+				.success(function(response) {					
+					console.log(response);
+					if (response!=""){
+						//document.getElementById("exist").style.display="block";
+						//document.getElementById("subutton").disabled = true;
+						scope.exists = true;
+						console.log(response.qualita);
+												scope.product.quality = response.qualita;
+												console.log("qualità "+scope.product.quality);
+						//alert("Prodotto esistente!");
+					}else{
+						scope.exists=false;
+                       // scope.product = response;
+												//console.log(scope.product);	
+						//document.getElementById("subutton").disabled = false;
+						//document.getElementById("exist").style.display="none";
+					}
+					})
+					.error(function() {
+						console.log("Si è verificato un errore!");
+					});
+				};
+			scope.updateRepair = function(scope) {
+				console.log(scope.product.target);
+				//Se l'utente per sbaglio ha cliccato su aggiungi prodotto appena ha acceduto alla pagina
+				if(scope.product.target==""){
+					alert("Non hai inserito nessun target: seleziona la casella in cui inserire il testo, successivamente puoi leggere il tag");
+					return;
+				}				
+				//Se il prodotto  esiste allora posso effettuare la riparazione
+				if(scope.exists && scope.product.quality =='3'){
+				$http({
+						method: 'PUT',
+						url: 'http://localhost:8090/products/repair/update/date',
+						data: $.param({
+							target : scope.product.target
+						}),
+						headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+				})
+					.success(function() {			
+						alert("Riparazione prodotto effettuata! Registrazione avvenuta con successo.");
+						scope.product = {target : "", name : "", quality:0};
+})
+					.error(function() {
+						alert("Si è verificato un errore!");
+					});	
+				}
+				else{
+					alert("Il prodotto non è da riparare o non esiste!");
+				}
+			};
+			});
+</script>
+</body>
+</html>

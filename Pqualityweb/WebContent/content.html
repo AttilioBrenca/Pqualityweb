@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>INSERIMENTO DEI PRODOTTI</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>  
+</head>
+<body ng-app="app">
+    <div ng-controller="CTRL">
+        <h1 class="title"> PRODOTTI</h1>
+        <ul class="list">
+            <li class="list-group-item d-flex justify-content-between align-items-center" >
+                <div class="col-md-3">Tag</div>
+                <div class="col-md-3 ">Nome</div>
+                <div class="col-md-3 ">Qualità</div>
+            </li>
+            <li onclick = " searchByTag(this);" id = {{obj.tag}} class="list-group-item d-flex justify-content-between align-items-center" ng-repeat="obj in list">
+                 <div class="col-md-3">{{obj.tag}}</div>
+                 <div class="col-md-3">{{obj.nome}} </div>
+                 <div class="col-md-2 ">
+                    <span class="badge badge-primary badge-pill">
+                        {{obj.qualita}}
+                    </span>
+                 </div>
+ </li>
+        </ul>
+    </div>
+<script>
+angular.module("app",[])
+                .controller("CTRL",function($scope,$http){
+                    $http.get("http://127.0.0.1:8090/products").success(function (response) {
+                        $scope.list=[];
+                        for(let i=0;i<response.length;i++){
+                            $scope.list[i]=response[i];
+                            console.log(response[i]);
+                        } 
+}
+);
+});               
+function searchByTag(elem){
+    console.log(elem.id);  
+}
+</script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
